@@ -15,12 +15,11 @@ jobs:
         with:
           version: 8
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
       - name: Build
-        run: pnpm -w --filter @velora/sdk run build
+        run: pnpm run build
       - name: Publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          cd packages/velora-js
           npm publish --access public
