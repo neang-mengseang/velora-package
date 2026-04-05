@@ -17,6 +17,8 @@ import type {
 } from './types';
 import { VeloraError } from './types';
 
+export const DEFAULT_BASE_URL = 'https://api.velora.dev';
+
 function buildUrl(base: string, path: string) {
   return base.replace(/\/$/, '') + '/' + path.replace(/^\//, '');
 }
@@ -27,7 +29,7 @@ export class VeloraClient {
   fetch: FetchLike;
 
   constructor(opts: ClientOptions = {}) {
-    this.baseUrl = opts.baseUrl || 'https://api.velora.dev';
+    this.baseUrl = opts.baseUrl ?? (typeof globalThis !== 'undefined' ? (globalThis as any).VELORA_API_URL : undefined) ?? DEFAULT_BASE_URL;
     this.apiKey = opts.apiKey;
     this.fetch = opts.fetch || (typeof globalThis !== 'undefined' ? (globalThis as any).fetch : undefined);
     if (!this.fetch) throw new Error('No fetch available. Pass a fetch implementation via options.fetch in Node.');

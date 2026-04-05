@@ -1,79 +1,106 @@
-
 # @velora/sdk
 
-Lightweight TypeScript SDK for the Velora Jobs API — easy way to create, manage and trigger jobs programmatically.
+Official TypeScript SDK for the Velora Jobs API.
 
-Installation
+This package provides a small, well-typed client for scheduling HTTP jobs, managing webhooks, and inspecting run history.
+
+Contents
+- `src/` — TypeScript source (types + implementation)
+- `dist/` — built output created by `tsc` (not committed; produced by `prepare` or CI)
+
+---
+## Installation
 
 ```bash
 npm install @velora/sdk
-# or pnpm add @velora/sdk
+# or
+pnpm add @velora/sdk
+# or
+yarn add @velora/sdk
 ```
+---
+Quick start
 
-Quick start (browser)
+Browser (ESM/TS)
 
 ```ts
 import { VeloraClient } from '@velora/sdk'
-
-const client = new VeloraClient({ apiKey: 'YOUR_API_KEY', baseUrl: 'https://api.velora.dev' })
-
-const list = await client.listJobs({ limit: 10 })
-console.log(list)
+const client = new VeloraClient({ apiKey: 'YOUR_API_KEY' })
+const jobs = await client.listJobs({ limit: 10 })
 ```
 
-Quick start (Node.js)
+Node.js (provide fetch)
 
 ```ts
 import fetch from 'node-fetch' // or undici
-import { VeloraClient, computeHmacSignature } from '@velora/sdk'
+import { VeloraClient, computeHmacSignature, DEFAULT_BASE_URL } from '@velora/sdk'
 
-const client = new VeloraClient({ apiKey: process.env.VELORA_KEY, baseUrl: 'https://api.velora.dev', fetch })
+const client = new VeloraClient({ apiKey: process.env.VELORA_KEY, fetch, baseUrl: process.env.VELORA_API_URL })
 
-// authenticated request
-await client.createJob({ target_url: 'https://example.com/hook', schedule_cron: '0 9 * * *' })
+// create job
+await client.createJob({ name: 'daily-report', target_url: 'https://example.com/hook', schedule_cron: '0 9 * * *' })
 
-// public webhook trigger with HMAC signature
+// trigger public webhook with HMAC signature
 const body = { event: 'ping' }
 const signature = await computeHmacSignature('YOUR_WEBHOOK_SECRET', body)
 await client.triggerWebhook('JOB_ID', body, { signature })
 ```
 
-API (high level)
+Core features / public API
 
-- `new VeloraClient(opts)` — opts: `{ baseUrl?, apiKey?, fetch? }`
-- `listJobs(params)`, `getJob(id)`, `createJob(payload)`, `updateJob(id,payload)`, `deleteJob(id)`
-- `pauseJob(id)`, `resumeJob(id)`
-- `triggerJob(id)`, `enqueueJob(id)` — authenticated manual triggers
-- `triggerWebhook(id, body?, { token?, signature?, headers? })` — public webhook POST (no Authorization)
-- `regenerateWebhookSecret(id)`
-- `listJobRuns(id, params)` — returns run history
-- `getUsage()`, `getPlan()`
+- `VeloraClient(opts)` — constructor options: `{ baseUrl?: string, apiKey?: string, fetch?: FetchLike }`.
+- `DEFAULT_BASE_URL` — exported default endpoint (`https://api.velora.dev`).
 
-Helper
+Job management
+- `listJobs(params)` — paginated response: `{ jobs, total, limit, offset }`.
+- `getJob(id)`, `createJob(payload)`, `updateJob(id,payload)`, `deleteJob(id)`.
+- `pauseJob(id)`, `resumeJob(id)`, `triggerJob(id)`, `enqueueJob(id)`.
 
-- `computeHmacSignature(secret, body)` — returns `sha256=<hex>` (works in browser and Node)
+Runs & history
+- `listJobRuns(jobId, { limit?, offset? })` → `{ runs, total, limit, offset }`.
 
-Notes
+Account & plan
+- `getUsage()` → `{ usage, limits, period }`.
+- `getPlan()` → `{ subscription, plan }`.
 
-- Node.js: pass a `fetch` implementation via the `VeloraClient` options (e.g., `node-fetch` or `undici`).
-- Errors: non-2xx responses throw an Error with `status` and `body` properties.
+Webhooks
+- `triggerWebhook(id, body?, opts?)` — public webhook POST; accepts `token` (X-Webhook-Token) or `signature` (X-Hub-Signature-256) in `opts`.
+- `regenerateWebhookSecret(jobId)` → returns new secret.
 
-Publishing this package to npm
+Types and errors
+- `types.ts` exports all DTOs used by the client (jobs, runs, plan, usage, payloads).
+- `VeloraError` — thrown for non-2xx responses; has `status: number` and `body: ApiErrorBody | null`.
 
-1. Ensure `package.json` fields are set (`name`, `version`, `repository`, `license`). If publishing a scoped package (e.g. `@velora/sdk`) you must publish with public access.
+Helpers
+- `computeHmacSignature(secret, body)` — returns `sha256=<hex>` compatible with `X-Hub-Signature-256`; works in browser (SubtleCrypto) and Node (crypto).
 
-2. Create an npm account and generate an automation token:
+Design notes
+- Default endpoint is `DEFAULT_BASE_URL = 'https://api.velora.dev'`, but callers can override via `baseUrl` or `VELORA_API_URL` environment variable.
+- The client does not implicitly retry; callers may add backoff/retry behavior if needed.
+
+Development
+- Build: `pnpm -w --filter @velora/sdk run build`
+- Typecheck: `pnpm -w --filter @velora/sdk run build`
+- Local test tarball: `cd packages/velora-js && pnpm run build && npm pack`
+
+Releasing
+- CI publishes when you push a tag matching `v*` (see `.github/workflows/publish.yml`).
+- Add a repo secret `NPM_TOKEN` with an npm Automation token (publish scope, bypass 2FA) to enable CI publish.
+
+Release flow
 
 ```bash
-npm login
-npm token create --read-only=false
+# bump version in packages/velora-js/package.json or use `npm version`
+git commit -am "chore(release): prepare vX.Y.Z"
+git tag -a vX.Y.Z -m "Release vX.Y.Z"
+git push origin vX.Y.Z
 ```
 
-3. Publish (from the package folder):
+Git strategy for `dist`
+- We do not commit `dist/` to the repo. The package contains a `prepare` script so installing directly from Git will build the SDK on install.
 
-```bash
-# build first
-npm run build
-# publish scoped package as public
-npm publish --access public
-```
+Contributing
+- Open a PR with descriptive tests or examples. Keep changes focused and update `types.ts` if API shapes change.
+
+License
+- MIT
