@@ -1,4 +1,4 @@
-# @velora/sdk
+# @rimora/velora
 
 Official TypeScript SDK for the Velora Jobs API.
 
@@ -12,11 +12,11 @@ Contents
 ## Installation
 
 ```bash
-npm install @velora/sdk
+npm install @rimora/velora
 # or
-pnpm add @velora/sdk
+pnpm add @rimora/velora
 # or
-yarn add @velora/sdk
+yarn add @rimora/velora
 ```
 ---
 Quick start
@@ -24,7 +24,7 @@ Quick start
 Browser (ESM/TS)
 
 ```ts
-import { VeloraClient } from '@velora/sdk'
+import { VeloraClient } from '@rimora/velora'
 const client = new VeloraClient({ apiKey: 'YOUR_API_KEY' })
 const jobs = await client.listJobs({ limit: 10 })
 ```
@@ -33,7 +33,7 @@ Node.js (provide fetch)
 
 ```ts
 import fetch from 'node-fetch' // or undici
-import { VeloraClient, computeHmacSignature, DEFAULT_BASE_URL } from '@velora/sdk'
+import { VeloraClient, computeHmacSignature, DEFAULT_BASE_URL } from '@rimora/velora'
 
 const client = new VeloraClient({ apiKey: process.env.VELORA_KEY, fetch, baseUrl: process.env.VELORA_API_URL })
 
@@ -79,8 +79,8 @@ Design notes
 - The client does not implicitly retry; callers may add backoff/retry behavior if needed.
 
 Development
-- Build: `pnpm -w --filter @velora/sdk run build`
-- Typecheck: `pnpm -w --filter @velora/sdk run build`
+- Build: `pnpm -w --filter @rimora/velora run build`
+- Typecheck: `pnpm -w --filter @rimora/velora run build`
 - Local test tarball: `cd packages/velora-js && pnpm run build && npm pack`
 
 Releasing
