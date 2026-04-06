@@ -17,7 +17,7 @@ import type {
 } from './types';
 import { VeloraError } from './types';
 
-export const DEFAULT_BASE_URL = 'https://api.velora.dev';
+export const DEFAULT_BASE_URL = 'https://velora-api.psalinks.com';
 
 function buildUrl(base: string, path: string) {
   return base.replace(/\/$/, '') + '/' + path.replace(/^\//, '');

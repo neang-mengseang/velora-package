@@ -3,7 +3,7 @@ function buildUrl(base, path) {
 }
 export class VeloraClient {
     constructor(opts = {}) {
-        this.baseUrl = opts.baseUrl || 'https://api.velora.dev';
+        this.baseUrl = opts.baseUrl || 'https://velora-api.psalinks.com';
         this.apiKey = opts.apiKey;
         this.fetch = opts.fetch || (typeof globalThis !== 'undefined' ? globalThis.fetch : undefined);
         if (!this.fetch)

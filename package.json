@@ -19,6 +19,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "postbuild": "node ./scripts/patch-imports.js",
     "prepare": "pnpm run build",
     "prepublishOnly": "npm run build"
   },
