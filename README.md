@@ -18,10 +18,11 @@ pnpm add @rimora/velora
 # or
 yarn add @rimora/velora
 ```
----
-Quick start
 
-Browser (ESM/TS)
+---
+## Quick Start
+
+### Browser (ESM/TS)
 
 ```ts
 import { VeloraClient } from '@rimora/velora'
@@ -29,13 +30,17 @@ const client = new VeloraClient({ apiKey: 'YOUR_API_KEY' })
 const jobs = await client.listJobs({ limit: 10 })
 ```
 
-Node.js (provide fetch)
+### Node.js (provide fetch)
 
 ```ts
 import fetch from 'node-fetch' // or undici
 import { VeloraClient, computeHmacSignature, DEFAULT_BASE_URL } from '@rimora/velora'
 
-const client = new VeloraClient({ apiKey: process.env.VELORA_KEY, fetch, baseUrl: process.env.VELORA_API_URL })
+const client = new VeloraClient({ 
+  apiKey: process.env.VELORA_KEY, 
+  fetch, 
+  baseUrl: process.env.VELORA_API_URL 
+})
 
 // create job with folder
 await client.createJob({
@@ -54,48 +59,97 @@ const signature = await computeHmacSignature('YOUR_WEBHOOK_SECRET', body)
 await client.triggerWebhook('JOB_ID', body, { signature })
 ```
 
-Core features / public API
+---
+## Core Features
+
+### Client Configuration
 
 - `VeloraClient(opts)` — constructor options: `{ baseUrl?: string, apiKey?: string, fetch?: FetchLike }`.
 - `DEFAULT_BASE_URL` — exported default endpoint (`https://api.velora.dev`).
 
-Job management
+### Job management
 - `listJobs(params)` — paginated response: `{ jobs, total, limit, offset }`.
+  - Supports filtering by `folder_path` to get jobs in a specific folder
 - `getJob(id)`, `createJob(payload)`, `updateJob(id,payload)`, `deleteJob(id)`.
-- `pauseJob(id)`, `resumeJob(id)`, `triggerJob(id)`.
+- `pauseJob(id)`, `resumeJob(id)`, `triggerJob(id)` — trigger for immediate execution.
 
-Runs & history
+### Folder Organization
+
+Jobs can be organized into virtual folders using `folder_path`:
+
+```ts
+// Create jobs in folders
+await client.createJob({
+  name: 'daily-report',
+  target_url: 'https://example.com/hook',
+  schedule_cron: '0 9 * * *',
+  folder_path: '/reports/daily/'
+})
+
+await client.createJob({
+  name: 'weekly-summary',
+  target_url: 'https://example.com/hook',
+  schedule_cron: '0 9 * * 0',
+  folder_path: '/reports/weekly/'
+})
+
+// List all jobs in a folder
+const jobs = await client.listJobs({ folder_path: '/reports/' })
+
+// List jobs at root level
+const rootJobs = await client.listJobs({ folder_path: '/' })
+```
+
+**Folder path format:**
+- Must start and end with `/` (e.g., `/reports/`, `/checkin/monday/`)
+- Root level jobs use `/` as the folder path
+- Nested folders are supported (e.g., `/reports/daily/`)
+
+### Runs & History
+
 - `listJobRuns(jobId, { limit?, offset? })` → `{ runs, total, limit, offset }`.
+- Get execution history for a specific job
 
-Account & plan
+### Account & Plan
+
 - `getUsage()` → `{ usage, limits, period }`.
 - `getPlan()` → `{ subscription, plan }`.
 
-Webhooks
+### Webhooks
+
 - `triggerWebhook(id, body?, opts?)` — public webhook POST; accepts `token` (X-Webhook-Token) or `signature` (X-Hub-Signature-256) in `opts`.
 - `regenerateWebhookSecret(jobId)` → returns new secret.
 
-Types and errors
+### Types and Errors
+
 - `types.ts` exports all DTOs used by the client (jobs, runs, plan, usage, payloads).
 - `VeloraError` — thrown for non-2xx responses; has `status: number` and `body: ApiErrorBody | null`.
 
-Helpers
+### Helpers
+
 - `computeHmacSignature(secret, body)` — returns `sha256=<hex>` compatible with `X-Hub-Signature-256`; works in browser (SubtleCrypto) and Node (crypto).
 
-Design notes
+---
+## Design Notes
+
 - Default endpoint is `DEFAULT_BASE_URL = 'https://api.velora.dev'`, but callers can override via `baseUrl` or `VELORA_API_URL` environment variable.
 - The client does not implicitly retry; callers may add backoff/retry behavior if needed.
+- Folder paths are virtual - they're derived from the `folder_path` field on jobs, not separate database entities.
 
-Development
+---
+## Development
+
 - Build: `pnpm -w --filter @rimora/velora run build`
 - Typecheck: `pnpm -w --filter @rimora/velora run build`
 - Local test tarball: `cd packages/velora-js && pnpm run build && npm pack`
 
-Releasing
+---
+## Releasing
+
 - CI publishes when you push a tag matching `v*` (see `.github/workflows/publish.yml`).
 - Add a repo secret `NPM_TOKEN` with an npm Automation token (publish scope, bypass 2FA) to enable CI publish.
 
-Release flow
+### Release Flow
 
 ```bash
 # bump version in packages/velora-js/package.json or use `npm version`
@@ -104,11 +158,16 @@ git tag -a vX.Y.Z -m "Release vX.Y.Z"
 git push origin vX.Y.Z
 ```
 
-Git strategy for `dist`
+### Git Strategy for `dist`
+
 - We do not commit `dist/` to the repo. The package contains a `prepare` script so installing directly from Git will build the SDK on install.
 
-Contributing
+---
+## Contributing
+
 - Open a PR with descriptive tests or examples. Keep changes focused and update `types.ts` if API shapes change.
 
-License
-- MIT
+---
+## License
+
+MIT

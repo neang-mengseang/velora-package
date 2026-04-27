@@ -50,7 +50,6 @@ export class VeloraClient {
     async updateJob(id, payload) { return this.request(`/api/v1/jobs/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }); }
     async deleteJob(id) { return this.request(`/api/v1/jobs/${id}`, { method: 'DELETE' }); }
     async triggerJob(id) { return this.request(`/api/v1/jobs/${id}/trigger`, { method: 'POST' }); }
-    async enqueueJob(id) { return this.request(`/api/v1/jobs/${id}/enqueue`, { method: 'POST' }); }
     async regenerateWebhookSecret(id) { return this.request(`/api/v1/jobs/${id}/regenerate-webhook-secret`, { method: 'POST' }); }
     async pauseJob(id) { return this.request(`/api/v1/jobs/${id}/pause`, { method: 'POST' }); }
     async resumeJob(id) { return this.request(`/api/v1/jobs/${id}/resume`, { method: 'POST' }); }

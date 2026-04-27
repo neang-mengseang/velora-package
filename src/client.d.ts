@@ -12,7 +12,6 @@ export declare class VeloraClient {
     updateJob(id: string, payload: JobUpdatePayload): Promise<SimpleResponse>;
     deleteJob(id: string): Promise<SimpleResponse>;
     triggerJob(id: string): Promise<SimpleResponse>;
-    enqueueJob(id: string): Promise<SimpleResponse>;
     regenerateWebhookSecret(id: string): Promise<RegenerateWebhookSecretResponse>;
     pauseJob(id: string): Promise<SimpleResponse>;
     resumeJob(id: string): Promise<SimpleResponse>;
