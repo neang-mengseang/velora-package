@@ -55,6 +55,7 @@ export class VeloraClient {
   async listJobs(params?: JobListParams): Promise<JobListResponse> {
     const qp = new URLSearchParams();
     if (params?.status) qp.set('status', params.status);
+    if (params?.folder_path) qp.set('folder_path', params.folder_path);
     if (params?.limit) qp.set('limit', String(params.limit));
     if (params?.offset) qp.set('offset', String(params.offset));
     const path = `/api/v1/jobs${qp.toString() ? '?' + qp.toString() : ''}`;
@@ -67,7 +68,6 @@ export class VeloraClient {
   async deleteJob(id: string): Promise<SimpleResponse> { return this.request(`/api/v1/jobs/${id}`, { method: 'DELETE' }); }
 
   async triggerJob(id: string): Promise<SimpleResponse> { return this.request(`/api/v1/jobs/${id}/trigger`, { method: 'POST' }); }
-  async enqueueJob(id: string): Promise<SimpleResponse> { return this.request(`/api/v1/jobs/${id}/enqueue`, { method: 'POST' }); }
   async regenerateWebhookSecret(id: string): Promise<RegenerateWebhookSecretResponse> { return this.request(`/api/v1/jobs/${id}/regenerate-webhook-secret`, { method: 'POST' }); }
   async pauseJob(id: string): Promise<SimpleResponse> { return this.request(`/api/v1/jobs/${id}/pause`, { method: 'POST' }); }
   async resumeJob(id: string): Promise<SimpleResponse> { return this.request(`/api/v1/jobs/${id}/resume`, { method: 'POST' }); }

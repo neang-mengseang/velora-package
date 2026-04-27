@@ -30,6 +30,7 @@ export interface JobCreatePayload {
   headers_json?: Record<string, string>;
   body_json?: unknown;
   retry_policy_json?: Record<string, unknown>;
+  folder_path?: string;
   [key: string]: any;
 }
 
@@ -38,11 +39,13 @@ export interface JobUpdatePayload {
   target_url?: string;
   schedule_cron?: string | null;
   paused?: boolean;
+  folder_path?: string;
   [key: string]: any;
 }
 
 export interface JobListParams {
   status?: string;
+  folder_path?: string;
   limit?: number;
   offset?: number;
 }

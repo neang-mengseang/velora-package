@@ -37,8 +37,16 @@ import { VeloraClient, computeHmacSignature, DEFAULT_BASE_URL } from '@rimora/ve
 
 const client = new VeloraClient({ apiKey: process.env.VELORA_KEY, fetch, baseUrl: process.env.VELORA_API_URL })
 
-// create job
-await client.createJob({ name: 'daily-report', target_url: 'https://example.com/hook', schedule_cron: '0 9 * * *' })
+// create job with folder
+await client.createJob({
+  name: 'daily-report',
+  target_url: 'https://example.com/hook',
+  schedule_cron: '0 9 * * *',
+  folder_path: '/reports/'  // organize jobs into folders
+})
+
+// list jobs in a specific folder
+const jobs = await client.listJobs({ folder_path: '/reports/' })
 
 // trigger public webhook with HMAC signature
 const body = { event: 'ping' }
@@ -54,7 +62,7 @@ Core features / public API
 Job management
 - `listJobs(params)` — paginated response: `{ jobs, total, limit, offset }`.
 - `getJob(id)`, `createJob(payload)`, `updateJob(id,payload)`, `deleteJob(id)`.
-- `pauseJob(id)`, `resumeJob(id)`, `triggerJob(id)`, `enqueueJob(id)`.
+- `pauseJob(id)`, `resumeJob(id)`, `triggerJob(id)`.
 
 Runs & history
 - `listJobRuns(jobId, { limit?, offset? })` → `{ runs, total, limit, offset }`.
