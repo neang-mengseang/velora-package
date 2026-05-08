@@ -70,17 +70,25 @@ export class VeloraClient {
     if (params?.folder_path) qp.set('folder_path', params.folder_path);
     if (params?.limit) qp.set('limit', String(params.limit));
     if (params?.offset) qp.set('offset', String(params.offset));
+    if (params?.include_http_details) qp.set('include_http_details', 'true');
     const path = `/api/v1/jobs${qp.toString() ? '?' + qp.toString() : ''}`;
     return this.request(path, { method: 'GET' });
   }
 
-  async getJob(id: string): Promise<Job> { return this.request(`/api/v1/jobs/${id}`, { method: 'GET' }); }
+  async getJob(id: string, includeHttpDetails: boolean = false): Promise<Job> {
+    const qp = includeHttpDetails ? '?include_http_details=true' : '';
+    return this.request(`/api/v1/jobs/${id}${qp}`, { method: 'GET' });
+  }
 
-  async bulkGetJobs(payload: JobBulkGetPayload): Promise<JobBulkGetResponse> {
-    return this.request('/api/v1/jobs/bulk', { method: 'POST', body: JSON.stringify(payload) });
+  async bulkGetJobs(payload: JobBulkGetPayload, includeHttpDetails: boolean = false): Promise<JobBulkGetResponse> {
+    const qp = includeHttpDetails ? '?include_http_details=true' : '';
+    return this.request(`/api/v1/jobs/bulk${qp}`, { method: 'POST', body: JSON.stringify(payload) });
   }
   async createJob(payload: JobCreatePayload): Promise<CreateJobResponse> { return this.request('/api/v1/jobs', { method: 'POST', body: JSON.stringify(payload) }); }
-  async updateJob(id: string, payload: JobUpdatePayload): Promise<SimpleResponse> { return this.request(`/api/v1/jobs/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }); }
+  async updateJob(id: string, payload: JobUpdatePayload, includeHttpDetails: boolean = false): Promise<Job> {
+    const qp = includeHttpDetails ? '?include_http_details=true' : '';
+    return this.request(`/api/v1/jobs/${id}${qp}`, { method: 'PATCH', body: JSON.stringify(payload) });
+  }
   async deleteJob(id: string): Promise<SimpleResponse> { return this.request(`/api/v1/jobs/${id}`, { method: 'DELETE' }); }
 
   async triggerJob(id: string): Promise<SimpleResponse> { return this.request(`/api/v1/jobs/${id}/trigger`, { method: 'POST' }); }
@@ -93,8 +101,9 @@ export class VeloraClient {
   async batchCreateJobs(payload: JobBatchCreatePayload): Promise<JobBatchCreateResponse> {
     return this.request('/api/v1/jobs/batch', { method: 'POST', body: JSON.stringify(payload) });
   }
-  async batchUpdateJobs(payload: JobBatchUpdatePayload): Promise<JobBatchUpdateResponse> {
-    return this.request('/api/v1/jobs/batch', { method: 'PATCH', body: JSON.stringify(payload) });
+  async batchUpdateJobs(payload: JobBatchUpdatePayload, includeHttpDetails: boolean = false): Promise<JobBatchUpdateResponse> {
+    const qp = includeHttpDetails ? '?include_http_details=true' : '';
+    return this.request(`/api/v1/jobs/batch${qp}`, { method: 'PATCH', body: JSON.stringify(payload) });
   }
   async batchDeleteJobs(payload: JobBatchDeletePayload): Promise<JobBatchDeleteResponse> {
     return this.request('/api/v1/jobs/batch', { method: 'DELETE', body: JSON.stringify(payload) });

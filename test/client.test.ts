@@ -3,7 +3,7 @@ import { VeloraClient, VeloraError } from '../src/client'
 import type { FetchLike } from '../src/types'
 
 // Mock fetch function
-const mockFetch = vi.fn() as any as FetchLike & { mockResolvedValueOnce: (value: any) => any }
+const mockFetch = vi.fn() as any
 
 describe('VeloraClient', () => {
   const originalFetch = globalThis.fetch
@@ -11,6 +11,7 @@ describe('VeloraClient', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockFetch.mockClear()
     // Clear global VELORA_API_URL to use default base URL in tests
     delete (globalThis as any).VELORA_API_URL
     delete (globalThis as any).VELORA_URL

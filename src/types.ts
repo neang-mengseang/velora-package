@@ -14,8 +14,17 @@ export interface Job {
   paused?: boolean;
   created_at?: string;
   updated_at?: string;
+  webhook_signature_enabled?: boolean;
+  http_details?: HttpDetails;
   // extend as needed
   [key: string]: any;
+}
+
+export interface HttpDetails {
+  headers?: Record<string, string>;
+  body?: string;
+  status_code?: number;
+  timestamp?: string;
 }
 
 export interface JobCreatePayload {
@@ -48,6 +57,7 @@ export interface JobListParams {
   folder_path?: string;
   limit?: number;
   offset?: number;
+  include_http_details?: boolean;
 }
 
 /** Server returns { jobs: Job[], total, limit, offset } */

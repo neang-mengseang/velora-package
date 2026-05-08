@@ -217,6 +217,40 @@ const rootJobs = await client.listJobs({ folder_path: '/' })
 
 - `triggerWebhook(id, body?, opts?)` — public webhook POST; accepts `token` (X-Webhook-Token) or `signature` (X-Hub-Signature-256) in `opts`.
 - `regenerateWebhookSecret(jobId)` → returns new secret.
+- Velora cron jobs now also send `X-Hub-Signature-256: sha256=<hex>` when hitting your `target_url`. Use `computeHmacSignature(secret, body)` to verify those requests and reject any signatures that do not match.
+
+#### Verifying Cron Job Signatures
+
+When Velora sends a cron job POST to your `target_url`, it includes an `X-Hub-Signature-256` header. Here's how to verify it:
+
+```ts
+import { computeHmacSignature } from '@rimora/velora'
+
+// On your webhook server
+app.post('/webhooks/daily', async (req, res) => {
+  const signatureHeader = req.headers['x-hub-signature-256'] as string
+  const webhookSecret = process.env.VELORA_WEBHOOK_SECRET // Your stored secret
+  const body = JSON.stringify(req.body)
+
+  if (!signatureHeader) {
+    return res.status(401).json({ error: 'Missing signature' })
+  }
+
+  // Compute expected signature
+  const expectedSignature = await computeHmacSignature(webhookSecret, body)
+
+  // Use timing-safe comparison (crypto.timingSafeEqual in Node.js)
+  if (signatureHeader !== expectedSignature) {
+    return res.status(401).json({ error: 'Invalid signature' })
+  }
+
+  // Signature is valid, process the webhook
+  console.log('Valid webhook:', req.body)
+  res.status(200).json({ received: true })
+})
+```
+
+**Note:** Store your webhook secret securely (e.g., in environment variables or a secrets manager). Use `regenerateWebhookSecret()` to rotate it if compromised.
 
 ### Types and Errors
 

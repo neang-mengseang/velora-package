@@ -23,7 +23,10 @@
     "prepare": "pnpm run build",
     "prepublishOnly": "npm run build",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "release:patch": "npm version patch -m \"chore: bump version to %s\" && git push origin main --follow-tags",
+    "release:minor": "npm version minor -m \"chore: bump version to %s\" && git push origin main --follow-tags",
+    "release:major": "npm version major -m \"chore: bump version to %s\" && git push origin main --follow-tags"
   },
   "keywords": [
     "velora",
@@ -42,8 +45,8 @@
     "url": "git+https://github.com/velora/velora-js.git"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
-    "@types/node": "^20.0.0",
-    "vitest": "^1.0.0"
+    "@types/node": "^20.19.40",
+    "typescript": "^5.9.3",
+    "vitest": "^1.6.1"
   }
 }
